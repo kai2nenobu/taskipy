@@ -2,6 +2,7 @@ import os
 import random
 import signal
 import subprocess
+import sys
 import time
 import unittest
 import warnings
@@ -33,7 +34,7 @@ class TaskipyTestCase(unittest.TestCase):
     def start_taskipy_process(self, task: str, args: List[str] = None, cwd=os.curdir) -> subprocess.Popen:
         executable_path = path.abspath('task')
         args = args or []
-        return subprocess.Popen([executable_path, task] + args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+        return subprocess.Popen([sys.executable, executable_path, task] + args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
 
     def create_test_dir_from_fixture(self, fixture_name: str):
         project_generator = GenerateProjectFromFixture(path.join('tests', 'fixtures', fixture_name))

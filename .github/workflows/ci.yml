@@ -61,4 +61,4 @@ jobs:
     - name: Install dependencies
       run: poetry install
     - name: Test
-      run: poetry run task test
+      run: poetry run python -m unittest -v tests/test_taskipy.py
