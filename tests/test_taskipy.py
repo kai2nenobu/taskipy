@@ -94,7 +94,6 @@ class RunTaskTestCase(TaskipyTestCase):
 
         self.assertSubstr('hello stderr', stderr)
 
-
 class TaskPrePostHooksTestCase(TaskipyTestCase):
     def test_running_pre_task_hook(self):
         cwd = self.create_test_dir_from_fixture('project_with_pre_post_task_hooks')
@@ -234,7 +233,7 @@ class TaskRunFailTestCase(TaskipyTestCase):
         cwd = self.create_test_dir_from_fixture('project_without_pyproject')
         exit_code, stdout, _ = self.run_task('some_task', cwd=cwd)
 
-        self.assertSubstr('no pyproject.toml file found in this directory', stdout)
+        self.assertSubstr('no pyproject.toml file found in this directory or parent directories', stdout)
         self.assertEqual(exit_code, 1)
 
     def test_exiting_with_code_1_and_printing_if_pyproject_toml_file_is_malformed(self):
@@ -264,7 +263,7 @@ class InterruptingTaskTestCase(TaskipyTestCase):
         cwd = self.create_test_dir_from_fixture('project_with_tasks_that_handle_interrupts')
         process = self.start_taskipy_process('run_loop_with_interrupt_handling', cwd=cwd)
 
-        time.sleep(.2)
+        time.sleep(1.2)
 
         self.interrupt_task(process)
         exit_code = process.wait()
@@ -275,7 +274,7 @@ class InterruptingTaskTestCase(TaskipyTestCase):
         cwd = self.create_test_dir_from_fixture('project_with_tasks_that_handle_interrupts')
         process = self.start_taskipy_process('run_loop_without_interrupt_handling', cwd=cwd)
 
-        time.sleep(.2)
+        time.sleep(1.2)
 
         self.interrupt_task(process)
 
@@ -287,7 +286,7 @@ class InterruptingTaskTestCase(TaskipyTestCase):
         cwd = self.create_test_dir_from_fixture('project_with_tasks_that_handle_sigterm')
         process = self.start_taskipy_process('run_loop_with_sigterm_handling', cwd=cwd)
 
-        time.sleep(.2)
+        time.sleep(1.2)
 
         process.send_signal(signal.SIGTERM)
 
@@ -340,3 +339,17 @@ class CustomRunnerTestCase(TaskipyTestCase):
 
         self.assertSubstr('invalid value: runner is not a string. please check [tool.taskipy.settings.runner]', stdout)
         self.assertEqual(exit_code, 1)
+
+
+class TaskFromChildTestCase(TaskipyTestCase):
+    def test_running_parent_pyproject_task_from_child_directory(self):
+        cwd = self.create_test_dir_from_fixture('project_with_tasks_in_child')
+        _, stdout, _ = self.run_task('print_current_dir_name', cwd=path.join(cwd, 'child_without_pyproject'))
+
+        self.assertSubstr('child_without_pyproject', stdout)
+
+    def test_find_nearest_pyproject_from_child_directory(self):
+        cwd = self.create_test_dir_from_fixture('project_with_tasks_in_child')
+        _, stdout, _ = self.run_task('hello', cwd=path.join(cwd, 'child_with_pyproject'))
+
+        self.assertSubstr('hello from child', stdout)
